@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package serialization;
+
+option go_package = "./;sproto";
+
+message C {
+  repeated double SomeDoubleData = 1;
+
+  message B {
+    message A {
+      string SomeString = 1;
+      double SomeDouble = 2;
+      repeated int32 SomeInt32Data = 3;
+    }
+
+    repeated A SomeAData = 1;
+    string SomeString = 2;
+    string OtherString = 3;
+    repeated float SomeFloatData = 4;
+  }
+
+  map<string, B> SomeMap = 2;
+}
