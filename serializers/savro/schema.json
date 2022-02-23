@@ -1,0 +1,69 @@
+{
+  "name": "C",
+  "type": "record",
+  "namespace": "com.acme.avro",
+  "fields": [
+    {
+      "name": "SomeDoubleData",
+      "type": {
+        "type": "array",
+        "items": "double"
+      }
+    },
+    {
+      "name": "SomeMap",
+      "type": {
+        "name": "SomeMap",
+        "type": "map",
+        "values": {
+          "name": "B",
+          "type": "record",
+          "fields": [
+            {
+              "name": "SomeAData",
+              "type": {
+                "type": "array",
+                "items": {
+                  "name": "A",
+                  "type": "record",
+                  "fields": [
+                    {
+                      "name": "SomeString",
+                      "type": "string"
+                    },
+                    {
+                      "name": "SomeDouble",
+                      "type": "double"
+                    },
+                    {
+                      "name": "SomeInt32Data",
+                      "type": {
+                        "type": "array",
+                        "items": "int"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "SomeString",
+              "type": "string"
+            },
+            {
+              "name": "OtherString",
+              "type": "string"
+            },
+            {
+              "name": "SomeFloatData",
+              "type": {
+                "type": "array",
+                "items": "float"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -13,8 +13,8 @@ func NewSerializer() *ProtoSerializer {
 	return &ProtoSerializer{}
 }
 
-func (s *ProtoSerializer) serializeProto(input *C) ([]byte, error) {
-	return proto.Marshal(input)
+func (s *ProtoSerializer) serializeProto(input C) ([]byte, error) {
+	return proto.Marshal(&input)
 }
 
 func (s *ProtoSerializer) deserializeProto(input []byte, output *C) error {
@@ -22,7 +22,7 @@ func (s *ProtoSerializer) deserializeProto(input []byte, output *C) error {
 }
 
 func (s *ProtoSerializer) Serialize(input interface{}) ([]byte, error) {
-	obj, ok := input.(*C)
+	obj, ok := input.(C)
 	if ok {
 		return s.serializeProto(obj)
 	} else {

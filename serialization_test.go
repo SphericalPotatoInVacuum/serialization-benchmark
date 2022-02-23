@@ -8,6 +8,7 @@ import (
 
 	"github.com/SphericalPotatoInVacuum/serialization-benchmark/data"
 	"github.com/SphericalPotatoInVacuum/serialization-benchmark/serializers"
+	"github.com/SphericalPotatoInVacuum/serialization-benchmark/serializers/savro"
 	"github.com/SphericalPotatoInVacuum/serialization-benchmark/serializers/sgob"
 	"github.com/SphericalPotatoInVacuum/serialization-benchmark/serializers/sjson"
 	"github.com/SphericalPotatoInVacuum/serialization-benchmark/serializers/smsgpack"
@@ -23,23 +24,28 @@ func typeof(v interface{}) string {
 	return str[dotIdx+1:]
 }
 
-func TestSerializers(t *testing.T) {
-	serializers := []serializers.Serializer{
-		sjson.NewSerializer(),
+var Serializers []serializers.Serializer
+
+func init() {
+	Serializers = []serializers.Serializer{
 		sgob.NewSerializer(),
 		sxml.NewSerializer(),
-		sproto.NewSerializer(),
-		syaml.NewSerializer(),
+		sjson.NewSerializer(),
 		smsgpack.NewSerializer(),
+		syaml.NewSerializer(),
+		sproto.NewSerializer(),
+		savro.NewSerializer(),
 	}
+}
 
-	for _, serializer := range serializers {
+func TestSerializers(t *testing.T) {
+	for _, serializer := range Serializers {
 		t.Run(typeof(serializer), func(t *testing.T) {
 			var byte_data []byte
 			var err error
 			switch serializer.(type) {
 			case *sproto.ProtoSerializer:
-				byte_data, err = serializer.Serialize(&data.SampleProtoC)
+				byte_data, err = serializer.Serialize(data.SampleProtoC)
 			default:
 				byte_data, err = serializer.Serialize(data.SampleC)
 			}
@@ -71,20 +77,11 @@ func TestSerializers(t *testing.T) {
 }
 
 func BenchmarkSerializers(b *testing.B) {
-	serializers := []serializers.Serializer{
-		sjson.NewSerializer(),
-		sgob.NewSerializer(),
-		sxml.NewSerializer(),
-		sproto.NewSerializer(),
-		syaml.NewSerializer(),
-		smsgpack.NewSerializer(),
-	}
-	b.ResetTimer()
-	for _, serializer := range serializers {
+	for _, serializer := range Serializers {
 		var data_struct interface{}
 		switch serializer.(type) {
 		case *sproto.ProtoSerializer:
-			data_struct = &data.SampleProtoC
+			data_struct = data.SampleProtoC
 		default:
 			data_struct = data.SampleC
 		}
@@ -100,5 +97,44 @@ func BenchmarkSerializers(b *testing.B) {
 			}
 			b.ReportMetric(float64(data_size)/float64(b.N), "data_size")
 		})
+	}
+}
+
+func BenchmarkDeserializers(b *testing.B) {
+	for _, serializer := range Serializers {
+		switch serializer.(type) {
+		case *sproto.ProtoSerializer:
+			data_struct := data.SampleProtoC
+			other_struct := sproto.C{}
+			b.Run(typeof(serializer), func(b *testing.B) {
+				data_bytes, err := serializer.Serialize(data_struct)
+				if err != nil {
+					b.Fatal(err)
+				}
+				b.ResetTimer()
+				for i := 0; i < b.N; i++ {
+					err := serializer.Deserialize(data_bytes, &other_struct)
+					if err != nil {
+						b.Fatal(err)
+					}
+				}
+			})
+		default:
+			data_struct := data.SampleC
+			other_struct := data.C{}
+			b.Run(typeof(serializer), func(b *testing.B) {
+				data_bytes, err := serializer.Serialize(data_struct)
+				if err != nil {
+					b.Fatal(err)
+				}
+				b.ResetTimer()
+				for i := 0; i < b.N; i++ {
+					err := serializer.Deserialize(data_bytes, &other_struct)
+					if err != nil {
+						b.Fatal(err)
+					}
+				}
+			})
+		}
 	}
 }

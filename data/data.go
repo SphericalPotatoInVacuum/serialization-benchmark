@@ -67,7 +67,7 @@ func createC() C {
 	for i := range c.SomeDoubleData {
 		c.SomeDoubleData[i] = rand.Float64()
 	}
-	for i := 0; i < 100; i++ {
+	for i := 0; i < 50; i++ {
 		c.SomeMap[createString()] = createB()
 	}
 	return c
@@ -77,6 +77,7 @@ var SampleC C
 var SampleProtoC sproto.C
 
 func init() {
+	rand.Seed(42)
 	SampleC = createC()
 	SampleProtoC = *toProtoC(SampleC)
 }
