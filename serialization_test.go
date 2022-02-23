@@ -10,8 +10,10 @@ import (
 	"github.com/SphericalPotatoInVacuum/serialization-benchmark/serializers"
 	"github.com/SphericalPotatoInVacuum/serialization-benchmark/serializers/sgob"
 	"github.com/SphericalPotatoInVacuum/serialization-benchmark/serializers/sjson"
+	"github.com/SphericalPotatoInVacuum/serialization-benchmark/serializers/smsgpack"
 	"github.com/SphericalPotatoInVacuum/serialization-benchmark/serializers/sproto"
 	"github.com/SphericalPotatoInVacuum/serialization-benchmark/serializers/sxml"
+	"github.com/SphericalPotatoInVacuum/serialization-benchmark/serializers/syaml"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -27,6 +29,8 @@ func TestSerializers(t *testing.T) {
 		sgob.NewSerializer(),
 		sxml.NewSerializer(),
 		sproto.NewSerializer(),
+		syaml.NewSerializer(),
+		smsgpack.NewSerializer(),
 	}
 
 	for _, serializer := range serializers {
@@ -72,6 +76,8 @@ func BenchmarkSerializers(b *testing.B) {
 		sgob.NewSerializer(),
 		sxml.NewSerializer(),
 		sproto.NewSerializer(),
+		syaml.NewSerializer(),
+		smsgpack.NewSerializer(),
 	}
 	b.ResetTimer()
 	for _, serializer := range serializers {
