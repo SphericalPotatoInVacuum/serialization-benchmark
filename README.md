@@ -1,6 +1,6 @@
 # Benchmark of serialization formats using Golang
 
-![docker pulls](https://img.shields.io/docker/pulls/sphericalpotatoinvacuum/serialization-benchmark)
+![docker pulls](https://img.shields.io/docker/pulls/sphericalpotatoinvacuum/serialization-benchmark)![build status](https://img.shields.io/github/workflow/status/sphericalpotatoinvacuum/serialization-benchmark/ci)
 
 ## Tested packages
 
