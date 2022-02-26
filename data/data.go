@@ -7,6 +7,8 @@ import (
 	"github.com/google/uuid"
 )
 
+const size = 50
+
 type A struct {
 	SomeString    string
 	SomeDouble    float64
@@ -35,7 +37,7 @@ func createA() A {
 	a := A{
 		SomeString:    createString(),
 		SomeDouble:    rand.Float64(),
-		SomeInt32Data: make([]int32, rand.Int31n(50)+50),
+		SomeInt32Data: make([]int32, rand.Int31n(size)+size),
 	}
 	for i := range a.SomeInt32Data {
 		a.SomeInt32Data[i] = rand.Int31()
@@ -45,10 +47,10 @@ func createA() A {
 
 func createB() B {
 	b := B{
-		SomeAData:     make([]A, rand.Intn(50)+50),
+		SomeAData:     make([]A, rand.Intn(size)+size),
 		SomeString:    createString(),
 		OtherString:   createString(),
-		SomeFloatData: make([]float32, rand.Intn(50)+50),
+		SomeFloatData: make([]float32, rand.Intn(size)+size),
 	}
 	for i := range b.SomeAData {
 		b.SomeAData[i] = createA()
@@ -61,13 +63,13 @@ func createB() B {
 
 func createC() C {
 	c := C{
-		SomeDoubleData: make([]float64, rand.Intn(50)+50),
+		SomeDoubleData: make([]float64, rand.Intn(size)+size),
 		SomeMap:        make(map[string]B),
 	}
 	for i := range c.SomeDoubleData {
 		c.SomeDoubleData[i] = rand.Float64()
 	}
-	for i := 0; i < 50; i++ {
+	for i := 0; i < size; i++ {
 		c.SomeMap[createString()] = createB()
 	}
 	return c

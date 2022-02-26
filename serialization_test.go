@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"reflect"
 	"strings"
 	"testing"
@@ -24,117 +25,142 @@ func typeof(v interface{}) string {
 	return str[dotIdx+1:]
 }
 
-var Serializers []serializers.Serializer
+type TestCase struct {
+	name       string
+	serializer serializers.Serializer
+}
+
+var TestCases []TestCase
 
 func init() {
-	Serializers = []serializers.Serializer{
-		sgob.NewSerializer(),
-		sxml.NewSerializer(),
-		sjson.NewSerializer(),
-		smsgpack.NewSerializer(),
-		syaml.NewSerializer(),
-		sproto.NewSerializer(),
-		savro.NewSerializer(),
+	TestCases = []TestCase{
+		{name: "Native(gob)", serializer: sgob.NewSerializer()},
+		{name: "XML", serializer: sxml.NewSerializer()},
+		{name: "Json", serializer: sjson.NewSerializer()},
+		{name: "MsgPack", serializer: smsgpack.NewSerializer()},
+		{name: "Yaml", serializer: syaml.NewSerializer()},
+		{name: "Avro", serializer: savro.NewSerializer()},
 	}
 }
 
 func TestSerializers(t *testing.T) {
-	for _, serializer := range Serializers {
-		t.Run(typeof(serializer), func(t *testing.T) {
-			var byte_data []byte
-			var err error
-			switch serializer.(type) {
-			case *sproto.ProtoSerializer:
-				byte_data, err = serializer.Serialize(data.SampleProtoC)
-			default:
-				byte_data, err = serializer.Serialize(data.SampleC)
-			}
+	for _, testCase := range TestCases {
+		name, serializer := testCase.name, testCase.serializer
+		t.Run(name, func(t *testing.T) {
+			var other_struct data.C
+			byte_data, err := serializer.Serialize(data.SampleC)
 			if err != nil {
 				t.Fatal(err)
 			}
-			switch serializer.(type) {
-			case *sproto.ProtoSerializer:
-				var OtherC sproto.C
-				err = serializer.Deserialize(byte_data, &OtherC)
-				if err != nil {
-					t.Fatal(err)
-				}
-				if !proto.Equal(&OtherC, &data.SampleProtoC) {
-					t.Fatalf("Value changed after serialization cycle")
-				}
-			default:
-				var OtherC data.C
-				err = serializer.Deserialize(byte_data, &OtherC)
-				if err != nil {
-					t.Fatal(err)
-				}
-				if !reflect.DeepEqual(OtherC, data.SampleC) {
-					t.Fatalf("Value changed after serialization cycle")
-				}
+			os.WriteFile(fmt.Sprintf("serialization_results/%s", typeof(serializer)), byte_data, 'w')
+			err = serializer.Deserialize(byte_data, &other_struct)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !reflect.DeepEqual(other_struct, data.SampleC) {
+				t.Fatalf("Value changed after serialization cycle")
 			}
 		})
 	}
+	t.Run("Protobuf", func(t *testing.T) {
+		serializer := sproto.NewSerializer()
+		other_struct := data.SampleProtoC
+		byte_data, err := serializer.Serialize(data.SampleProtoC)
+		if err != nil {
+			t.Fatal(err)
+		}
+		err = serializer.Deserialize(byte_data, &other_struct)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !proto.Equal(&other_struct, &data.SampleProtoC) {
+			t.Fatalf("Value changed after serialization cycle")
+		}
+	})
 }
 
-func BenchmarkSerializers(b *testing.B) {
-	for _, serializer := range Serializers {
-		var data_struct interface{}
-		switch serializer.(type) {
-		case *sproto.ProtoSerializer:
-			data_struct = data.SampleProtoC
-		default:
-			data_struct = data.SampleC
-		}
-		b.Run(typeof(serializer), func(b *testing.B) {
-			var data_size uint64
+func BenchmarkSerializationTime(b *testing.B) {
+	for _, testCase := range TestCases {
+		name, serializer := testCase.name, testCase.serializer
+		b.Run(name, func(b *testing.B) {
 			b.ResetTimer()
 			for i := 0; i < b.N; i++ {
-				data, err := serializer.Serialize(data_struct)
+				_, err := serializer.Serialize(data.SampleC)
 				if err != nil {
 					b.Fatal(err)
 				}
-				data_size += uint64(len(data))
 			}
-			b.ReportMetric(float64(data_size)/float64(b.N), "data_size")
 		})
 	}
+	b.Run("Protobuf", func(b *testing.B) {
+		serializer := sproto.NewSerializer()
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			_, err := serializer.Serialize(data.SampleProtoC)
+			if err != nil {
+				b.Fatal(err)
+			}
+		}
+	})
 }
 
-func BenchmarkDeserializers(b *testing.B) {
-	for _, serializer := range Serializers {
-		switch serializer.(type) {
-		case *sproto.ProtoSerializer:
-			data_struct := data.SampleProtoC
-			other_struct := sproto.C{}
-			b.Run(typeof(serializer), func(b *testing.B) {
-				data_bytes, err := serializer.Serialize(data_struct)
-				if err != nil {
-					b.Fatal(err)
-				}
-				b.ResetTimer()
-				for i := 0; i < b.N; i++ {
-					err := serializer.Deserialize(data_bytes, &other_struct)
-					if err != nil {
-						b.Fatal(err)
-					}
-				}
-			})
-		default:
-			data_struct := data.SampleC
-			other_struct := data.C{}
-			b.Run(typeof(serializer), func(b *testing.B) {
-				data_bytes, err := serializer.Serialize(data_struct)
-				if err != nil {
-					b.Fatal(err)
-				}
-				b.ResetTimer()
-				for i := 0; i < b.N; i++ {
-					err := serializer.Deserialize(data_bytes, &other_struct)
-					if err != nil {
-						b.Fatal(err)
-					}
-				}
-			})
-		}
+func BenchmarkDataSize(b *testing.B) {
+	for _, testCase := range TestCases {
+		name, serializer := testCase.name, testCase.serializer
+		b.Run(name, func(b *testing.B) {
+			var data_size uint64
+			data, err := serializer.Serialize(data.SampleC)
+			if err != nil {
+				b.Fatal(err)
+			}
+			data_size += uint64(len(data))
+			b.ReportMetric(0, "ns/op")
+			b.ReportMetric(float64(data_size), "data_size")
+		})
 	}
+	b.Run("Protobuf", func(b *testing.B) {
+		serializer := sproto.NewSerializer()
+		var data_size uint64
+		data, err := serializer.Serialize(data.SampleProtoC)
+		if err != nil {
+			b.Fatal(err)
+		}
+		data_size += uint64(len(data))
+		b.ReportMetric(0, "ns/op")
+		b.ReportMetric(float64(data_size), "data_size")
+	})
+}
+func BenchmarkDeserializationTime(b *testing.B) {
+	for _, testCase := range TestCases {
+		name, serializer := testCase.name, testCase.serializer
+		other_struct := data.SampleC
+		b.Run(name, func(b *testing.B) {
+			data_bytes, err := serializer.Serialize(data.SampleC)
+			if err != nil {
+				b.Fatal(err)
+			}
+			b.ResetTimer()
+			for i := 0; i < b.N; i++ {
+				err := serializer.Deserialize(data_bytes, &other_struct)
+				if err != nil {
+					b.Fatal(err)
+				}
+			}
+		})
+	}
+	b.Run("Protobuf", func(b *testing.B) {
+		serializer := sproto.NewSerializer()
+		other_struct := data.SampleProtoC
+		data_bytes, err := serializer.Serialize(data.SampleProtoC)
+		if err != nil {
+			b.Fatal(err)
+		}
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			err := serializer.Deserialize(data_bytes, &other_struct)
+			if err != nil {
+				b.Fatal(err)
+			}
+		}
+	})
 }
