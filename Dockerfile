@@ -11,6 +11,6 @@ COPY data data/
 COPY serializers serializers/
 COPY scripts scripts/
 RUN protoc -I=serializers/sproto --go_out=serializers/sproto schema.proto
-COPY serialization_test.go stat.go bench.sh ./
+COPY serialization_test.go stat.go ./
 
 CMD ["/bin/bash", "-c", "./scripts/bench.sh"]
