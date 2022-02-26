@@ -34,7 +34,12 @@ go get -u -t
 ```
 
 `results.md` now contains a table that you see above in the [results](#results)
-section. To see how to update that table see the next section.
+section. For how to update that table see the next section. For your convenience
+there is a [docker container](https://hub.docker.com/r/sphericalpotatoinvacuum/serialization-benchmark)
+with all the needed packages that does the same thing:
+```console
+docker run --rm sphericalpotatoinvacuum/serialization-benchmark > results.md
+```
 
 ## Updating the results table in README.md
 
