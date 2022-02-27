@@ -14,17 +14,17 @@
 
 ## Results
 
-<!--results begin-->
-|`  FORMAT   `|`SERIALIZATION TIME`|`DESERIALIZATION TIME`|`  DATA SIZE   `|
-|------------:|-------------------:|---------------------:|---------------:|
-|`Native(gob)`|`     2.62ms (  1%)`|`       3.24ms (  1%)`|` 1.56MB ( 14%)`|
-|`        XML`|`    65.43ms ( 26%)`|`     386.44ms (100%)`|`11.34MB (100%)`|
-|`       Json`|`     9.13ms (  4%)`|`      50.15ms ( 13%)`|` 3.22MB ( 28%)`|
-|`    MsgPack`|`     9.57ms (  4%)`|`      16.53ms (  4%)`|` 1.69MB ( 15%)`|
-|`       Yaml`|`   251.99ms (100%)`|`     259.85ms ( 67%)`|` 5.39MB ( 48%)`|
-|`       Avro`|`     2.97ms (  1%)`|`       5.03ms (  1%)`|` 1.53MB ( 14%)`|
-|`   Protobuf`|`     2.21ms (  1%)`|`       3.27ms (  1%)`|` 1.53MB ( 13%)`|
-<!--results finish-->
+<pre>
+    FORMAT    | SERIALIZATION TIME | DESERIALIZATION TIME |   DATA SIZE    
+--------------|--------------------|----------------------|----------------
+  Native(gob) |       2.59ms,   1% |         2.93ms,   1% |  1.56MB,  14%  
+          XML |      63.85ms,  25% |       378.59ms, 100% | 11.34MB, 100%  
+         Json |       9.01ms,   4% |        50.51ms,  13% |  3.22MB,  28%  
+      MsgPack |      10.00ms,   4% |        16.37ms,   4% |  1.69MB,  15%  
+         Yaml |     256.17ms, 100% |       264.18ms,  70% |  5.39MB,  48%  
+         Avro |       2.88ms,   1% |         5.05ms,   1% |  1.53MB,  14%  
+     Protobuf |       2.01ms,   1% |         3.36ms,   1% |  1.53MB,  13%  
+</pre>
 
 ## Running the benchmarks
 

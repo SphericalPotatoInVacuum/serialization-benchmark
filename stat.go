@@ -88,16 +88,16 @@ func main() {
 		entry := m[serializer]
 		rows = append(rows, []string{
 			serializer,
-			fmt.Sprintf("%.2fms (%3.0f%%)", entry.serTime/1000000, entry.serTime/maxSerTime*100),
-			fmt.Sprintf("%.2fms (%3.0f%%)", entry.deserTime/1000000, entry.deserTime/maxDeserTime*100),
-			fmt.Sprintf("%.2fMB (%3.0f%%)", entry.dataSize/1024/1024, entry.dataSize/maxDataSize*100),
+			fmt.Sprintf("%.2fms, %3.0f%%", entry.serTime/1000000, entry.serTime/maxSerTime*100),
+			fmt.Sprintf("%.2fms, %3.0f%%", entry.deserTime/1000000, entry.deserTime/maxDeserTime*100),
+			fmt.Sprintf("%.2fMB, %3.0f%%", entry.dataSize/1024/1024, entry.dataSize/maxDataSize*100),
 		})
 	}
 
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader([]string{"Format", "Serialization Time", "Deserialization Time", "Data Size"})
 	table.SetAlignment(tablewriter.ALIGN_RIGHT)
-	table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
+	table.SetBorders(tablewriter.Border{Left: false, Top: false, Right: false, Bottom: false})
 	table.SetCenterSeparator("|")
 	table.AppendBulk(rows)
 	table.Render()
